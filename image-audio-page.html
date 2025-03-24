@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像と音楽の自動再生</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #121212;
+            color: white;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            text-align: center;
+        }
+        .container {
+            max-width: 100%;
+            padding: 20px;
+        }
+        .image-container {
+            margin-bottom: 20px;
+            max-width: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            max-height: 70vh;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .play-button {
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            margin: 10px 0;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .play-button:hover {
+            transform: scale(1.05);
+        }
+        .audio-info {
+            margin-top: 10px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        #playback-message {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #ff9800;
+        }
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <div class="image-container">
+            <!-- ここにご自身の画像URLを設定してください -->
+            <img id="display-image" src="/api/placeholder/800/600" alt="表示画像" />
+        </div>
+        
+        <div class="controls">
+            <button id="play-button" class="play-button">音楽を再生</button>
+            <div id="playback-message">ブラウザによっては自動再生が制限されている場合があります</div>
+            <div class="audio-info">「音楽を再生」ボタンをクリックすると、音楽が再生されます</div>
+        </div>
+
+        <!-- オーディオ要素 -->
+        <audio id="background-audio">
+            <!-- ここにご自身の音楽ファイルURLを設定してください -->
+            <source src="" type="audio/mpeg">
+            お使いのブラウザはオーディオ要素をサポートしていません。
+        </audio>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const audio = document.getElementById('background-audio');
+            const playButton = document.getElementById('play-button');
+            const loadingScreen = document.getElementById('loading');
+            const message = document.getElementById('playback-message');
+            
+            // ここに画像URLと音楽URLを設定
+            const imageUrl = "https://drive.google.com/file/d/1EKbWzCyLYA49_AL1Rws6SqiEBbGcExpt/view?usp=drive_link"; // あなたの画像URLに変更
+            const audioUrl = "https://drive.google.com/file/d/1fVHqk8Wm4Ohb2zH5gJKuqPO87HSA2N77/view?usp=drive_link"; // あなたの音楽URLに変更
+            
+            // 画像URLを設定
+            document.getElementById('display-image').src = imageUrl;
+            
+            // 音楽URLを設定
+            audio.src = audioUrl;
+            
+            // ページが読み込まれたら自動再生を試みる
+            window.addEventListener('load', function() {
+                // ローディング画面を非表示
+                loadingScreen.classList.add('hidden');
+                
+                // 自動再生を試みる
+                const playPromise = audio.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        // 自動再生成功
+                        message.textContent = "音楽が再生されています";
+                        playButton.textContent = "一時停止";
+                    })
+                    .catch(error => {
+                        // 自動再生が失敗（多くのブラウザでは自動再生ポリシーにより失敗します）
+                        message.textContent = "自動再生がブロックされました。「音楽を再生」ボタンをクリックしてください";
+                        console.log("自動再生がブロックされました:", error);
+                    });
+                }
+            });
+            
+            // 再生/一時停止ボタンの制御
+            playButton.addEventListener('click', function() {
+                if (audio.paused) {
+                    audio.play();
+                    playButton.textContent = "一時停止";
+                    message.textContent = "音楽が再生されています";
+                } else {
+                    audio.pause();
+                    playButton.textContent = "音楽を再生";
+                    message.textContent = "音楽が一時停止されています";
+                }
+            });
+            
+            // 音楽が終了したときの処理
+            audio.addEventListener('ended', function() {
+                playButton.textContent = "もう一度再生";
+                message.textContent = "再生が終了しました";
+            });
+        });
+    </script>
+</body>
+</html>
