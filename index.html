@@ -3,85 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>シンプル画像と音楽プレイヤー</title>
+    <title>画像と音楽の自動再生</title>
     <style>
-        body {
+        body, html {
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: #121212;
-            color: white;
-            font-family: sans-serif;
-            text-align: center;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
         }
-        img {
-            max-width: 100%;
-            max-height: 70vh;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        /* 画像を画面全体に表示 */
+        .fullscreen-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 画像が全体を覆うように調整 */
         }
-        button {
-            background-color: #1DB954;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            padding: 12px 30px;
+        /* 任意のクリック領域（自動再生の代替用） */
+        .tap-area {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
             cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .message {
-            margin-top: 15px;
-            color: #FF9800;
+        .tap-message {
+            padding: 15px 30px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border-radius: 30px;
+            font-family: sans-serif;
+            pointer-events: none; /* これがないとタップが検出されない場合がある */
+            animation: fadeOut 2s forwards;
+            animation-delay: 3s;
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; }
+        }
+        /* 非表示クラス */
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h1>画像と音楽プレイヤー</h1>
-    <!-- 画像を表示 -->
-    <img src="https://via.placeholder.com/800x600" alt="表示画像" id="myImage">
-    <!-- 音楽プレイヤー -->
-    <button id="playButton">音楽を再生</button>
-    <div class="message" id="message">「音楽を再生」ボタンをクリックすると、音楽が再生されます</div>
-    <audio id="myAudio">
+    <!-- 全画面画像 -->
+    <img src="https://via.placeholder.com/1920x1080" alt="" class="fullscreen-image" id="fullscreenImage">
+    <!-- タップメッセージ（ブラウザの自動再生制限に対応） -->
+    <div class="tap-area" id="tapArea">
+        <div class="tap-message">画面をタップすると音楽が流れます</div>
+    </div>
+    <!-- 音声要素 -->
+    <audio id="bgAudio" loop>
         <source src="" type="audio/mpeg">
-        お使いのブラウザはオーディオ要素をサポートしていません。
     </audio>
     <script>
-        // DOM要素の取得
-        const playButton = document.getElementById('playButton');
-        const audio = document.getElementById('myAudio');
-        const message = document.getElementById('message');
-        const image = document.getElementById('myImage');
-        // 画像のURL設定（プレースホルダー画像を使用）
-        image.src = "./art.png";
-        // 音楽のURL設定
-        audio.src = "./music.mp3";  // 実際の音楽URLを設定
-        // 再生/一時停止ボタンの制御
-        playButton.addEventListener('click', function() {
-            if (audio.paused) {
-                audio.play()
-                    .then(() => {
-                        playButton.textContent = "一時停止";
-                        message.textContent = "音楽が再生されています";
-                    })
-                    .catch(error => {
-                        message.textContent = "音楽の再生に失敗しました: " + error.message;
-                    });
-            } else {
-                audio.pause();
-                playButton.textContent = "音楽を再生";
-                message.textContent = "音楽が一時停止されています";
+        // 画像と音声のURL設定
+        document.getElementById('fullscreenImage').src = "./image.png"; // 実際の画像URLに変更
+        document.getElementById('bgAudio').src = "./music.mp3"; // 実際の音声URLに変更
+        // ページ読み込み完了時
+        window.addEventListener('load', function() {
+            const audio = document.getElementById('bgAudio');
+            const tapArea = document.getElementById('tapArea');
+            // 自動再生を試みる
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => {
+                    // 自動再生成功した場合はタップエリアを非表示
+                    setTimeout(() => {
+                        tapArea.classList.add('hidden');
+                    }, 5000);
+                })
+                .catch(error => {
+                    // 自動再生失敗（ほとんどのブラウザでこちらになる）
+                    console.log("自動再生がブロックされました:", error);
+                    // タップエリアを表示したまま
+                });
             }
-        });
-        // 音楽が終了したときの処理
-        audio.addEventListener('ended', function() {
-            playButton.textContent = "もう一度再生";
-            message.textContent = "再生が終了しました";
+            // 画面タップで音楽再生
+            tapArea.addEventListener('click', function() {
+                audio.play();
+                // クリック後、少し時間を置いてからメッセージを非表示
+                setTimeout(() => {
+                    document.querySelector('.tap-message').style.opacity = 0;
+                }, 500);
+            });
         });
     </script>
 </body>
