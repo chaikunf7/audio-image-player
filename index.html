@@ -133,11 +133,13 @@
             
             // 音楽URLを設定
             audio.src = audioUrl;
+
+            loadingScreen.classList.add('hidden');
             
             // ページが読み込まれたら自動再生を試みる
             window.addEventListener('load', function() {
                 // ローディング画面を非表示
-                loadingScreen.classList.add('hidden');
+                //loadingScreen.classList.add('hidden');
                 
                 // 自動再生を試みる
                 const playPromise = audio.play();
