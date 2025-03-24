@@ -40,12 +40,10 @@
     </style>
 </head>
 <body>
-    <h1>画像と音楽プレイヤー</h1>
     <!-- 画像を表示 -->
     <img src="https://via.placeholder.com/800x600" alt="表示画像" id="myImage">
     <!-- 音楽プレイヤー -->
     <button id="playButton">音楽を再生</button>
-    <div class="message" id="message">「音楽を再生」ボタンをクリックすると、音楽が再生されます</div>
     <audio id="myAudio">
         <source src="" type="audio/mpeg">
         お使いのブラウザはオーディオ要素をサポートしていません。
@@ -57,7 +55,7 @@
         const message = document.getElementById('message');
         const image = document.getElementById('myImage');
         // 画像のURL設定（プレースホルダー画像を使用）
-        image.src = "./image.png";
+        image.src = "./art.png";
         // 音楽のURL設定
         audio.src = "./music.mp3";  // 実際の音楽URLを設定
         // 再生/一時停止ボタンの制御
